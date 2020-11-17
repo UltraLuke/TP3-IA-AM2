@@ -3,18 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 public class AgentTheta : MonoBehaviour
 {
-    public LayerMask mask;
-    public float distanceMax;
-    public float radius;
-    public Vector3 offset;
-    public Node init;
-    public Node finit;
-    public PlayerController pj;
+    [Header("Gizmos settings")]
+    [SerializeField] LayerMask mask;
+    [SerializeField] float radius;
+    [SerializeField] Vector3 offset;
+    //public float distanceMax;
+
+    private Node init;
+    private Node finit;
+    private PlayerController pj;
     //public Box box;
     List<Node> _list;
     List<Vector3> _listVector;
     Theta<Node> _theta = new Theta<Node>();
-    
+
+    public Node Init { get => init; set => init = value; }
+    public Node Finit { get => finit; set => finit = value; }
+
+    private void Awake()
+    {
+        pj = GetComponent<PlayerController>();
+    }
+
     public void PathFindingTheta()
     {
         _list = _theta.Run(init, Satisfies, GetNeighbours, GetCost, Heuristic, InSight);
@@ -33,70 +43,18 @@ public class AgentTheta : MonoBehaviour
         return true;
     }
 
-    float HeuristicVector(Vector3 curr)
-    {
-        return Vector3.Distance(curr, finit.transform.position);
-    }
-    Dictionary<Vector3, float> GetNeighboursCostVector(Vector3 curr)
-    {
-        Dictionary<Vector3, float> dic = new Dictionary<Vector3, float>();
-        for (int x = -1; x <= 1; x++)
-        {
-            for (int z = -1; z <= 1; z++)
-            {
-                if (z == 0 && x == 0) continue;
-                Vector3 pos = new Vector3(x + curr.x, curr.y, z + curr.z);
-
-                dic.Add(pos, 1);
-            }
-        }
-        return dic;
-    }
-    bool SatisfiesVector(Vector3 pos)
-    {
-        return Vector3.Distance(pos, finit.transform.position) <= distanceMax;
-    }
     float Heuristic(Node curr)
     {
         return Vector3.Distance(curr.transform.position, finit.transform.position);
     }
-    //float GetCost(Vector3 from, Vector3 to)
-    //{
-    //    return Vector3.Distance(from, to);
-    //}
     float GetCost(Node from, Node to)
     {
         return Vector3.Distance(from.transform.position, to.transform.position);
     }
-    //List<Vector3> GetNeighbours(Vector3 curr)
-    //{
-    //    var list = new List<Vector3>();
-    //    for (int x = -1; x <= 1; x++)
-    //    {
-    //        for (int z = -1; z <= 1; z++)
-    //        {
-    //            if (x == 0 && z == 0) continue;
-    //            Vector3 newPos = new Vector3(curr.x + x, curr.y, curr.z + z);
-    //            list.Add(newPos);
-    //        }
-    //    }
-    //    return list;
-    //}
-    //Dictionary<Node, float> GetNeighboursCost(Node curr)
-    //{
-    //    Dictionary<Node, float> dic = new Dictionary<Node, float>();
-    //    for (int i = 0; i < curr.neightbourds.Count; i++)
-    //    {
-    //        float cost = 0;
-    //        cost += Vector3.Distance(curr.transform.position, curr.neightbourds[i].transform.position);
-    //        if (curr.neightbourds[i].hasTrap) cost += 3;
-    //        dic[curr.neightbourds[i]] = cost;
-    //    }
-    //    return dic;
-    //}
+    
     List<Node> GetNeighbours(Node curr)
     {
-        return curr.neightbourds;
+        return curr.GetNeighbours();
     }
     bool Satisfies(Node curr)
     {
