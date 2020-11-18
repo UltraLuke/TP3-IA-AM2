@@ -18,9 +18,19 @@ public class PathFindingEditor : EditorWindow
     float _gizmoRadius = .75f;
     Color _gizmoColor;
 
+    //Posiciones waypoints
+    List<Vector3> _waypointPositions;
+
+    //Indicador area pathfinding
+    Vector3 _textAreaPosition;
+
+    Vector2 scrollPos;
+
+
     //Flags
     bool _waypointsInScene;
     bool _waypointGenerationMode;
+    bool _calculatingPositions;
 
     [MenuItem("Tools/Pathfinding Editor")]
     public static void OpenWindow()
@@ -36,6 +46,8 @@ public class PathFindingEditor : EditorWindow
         _waypoint = Resources.Load("waypoint/waypoint", typeof(GameObject)) as GameObject;
         _wpContainer = FindObjectOfType<WaypointsContainer>();
         SceneView.duringSceneGui += OnSceneGUI;
+
+        //_titleArea = "Pathfinding Area: ";
     }
     private void OnDisable()
     {
@@ -72,28 +84,68 @@ public class PathFindingEditor : EditorWindow
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Pathfinding Area");
+
+            EditorGUI.BeginChangeCheck();
+
+            //Si hago un cambio en el area o los waypoints, recalculo las posiciones
             GUILayout.BeginHorizontal();
+
             _pathfindingAreaWidth = EditorGUILayout.FloatField("Width", _pathfindingAreaWidth);
             _pathfindingAreaLength = EditorGUILayout.FloatField("Length", _pathfindingAreaLength);
-            _pathfindingAreaWidth = _pathfindingAreaWidth < 0 ? 0 : _pathfindingAreaWidth;
-            _pathfindingAreaLength = _pathfindingAreaLength < 0 ? 0 : _pathfindingAreaLength;
             GUILayout.EndHorizontal();
             EditorGUILayout.LabelField("Waypoints amount");
             GUILayout.BeginHorizontal();
             _waypointRows = EditorGUILayout.IntField("Rows", _waypointRows);
             _waypointColumns = EditorGUILayout.IntField("Columns", _waypointColumns);
-            _waypointRows = _waypointRows < 1 ? 1 : _waypointRows;
-            _waypointColumns = _waypointColumns < 1 ? 1 : _waypointColumns;
             GUILayout.EndHorizontal();
             _originPoint = EditorGUILayout.Vector3Field("Origin Point", _originPoint);
+
+            if(GUILayout.Button("Generate Waypoints"))
+            {
+                GenerateWaypoints();
+                _waypointGenerationMode = false;
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                _pathfindingAreaWidth = _pathfindingAreaWidth < 0 ? 0 : _pathfindingAreaWidth;
+                _pathfindingAreaLength = _pathfindingAreaLength < 0 ? 0 : _pathfindingAreaLength;
+                _waypointRows = _waypointRows < 1 ? 1 : _waypointRows;
+                _waypointColumns = _waypointColumns < 1 ? 1 : _waypointColumns;
+
+                CalculatePositions();
+            }
+
+            _textAreaPosition = _originPoint + new Vector3(-1, 0, -1);
+
+            rect = EditorGUILayout.GetControlRect(false, 1);
             EditorGUI.DrawRect(rect, Color.gray);
 
             EditorGUILayout.Space();
 
+            //Algunos ajustes de visualizacion de indicadores
             EditorGUILayout.LabelField("Scene Indicators");
             _enableWPIndicators = EditorGUILayout.ToggleLeft("Show indicators", _enableWPIndicators);
             _gizmoRadius = EditorGUILayout.FloatField("Waypoint indicator radius", _gizmoRadius);
             _gizmoColor = EditorGUILayout.ColorField("Waypoint indicator color", _gizmoColor);
+        }
+        //Interfaz cuando ya tengo waypoints seteados
+        else if(_wpContainer != null && _wpContainer.transform.childCount > 0)
+        {
+            EditorGUILayout.LabelField("Waypoints");
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - 50)/*GUILayout.Width(withWindow), GUILayout.Height(heightWindow)*/);
+
+            Node[] wps = _wpContainer.transform.GetComponentsInChildren<Node>();
+            for (int i = 0; i < wps.Length; i++)
+            {
+                EditorGUILayout.ObjectField(wps[i].gameObject, typeof(GameObject), true);
+            }
+            EditorGUILayout.EndScrollView();
+
+            if(GUILayout.Button("Guardar waypoints"))
+            {
+                SaveWaypoints(wps);
+            }
         }
     }
 
@@ -105,10 +157,36 @@ public class PathFindingEditor : EditorWindow
             _wpContainer.transform.position = Vector3.zero;
         }
 
-        var obj = (GameObject)PrefabUtility.InstantiatePrefab(_waypoint);
-        obj.transform.position = Vector3.zero;
-        obj.transform.parent = _wpContainer.transform;
+        for (int i = 0; i < _waypointPositions.Count; i++)
+        {
+            var obj = (GameObject)PrefabUtility.InstantiatePrefab(_waypoint);
+            obj.transform.position = _waypointPositions[i];
+            obj.transform.parent = _wpContainer.transform;
+        }
     }
+
+    private void SaveWaypoints(Node[] wps)
+    {
+        var scriptable = ScriptableObject.CreateInstance<WaypointsInfo>();
+        scriptable.waypointsData = new List<WaypointData>();
+        WaypointData wpData = default;
+
+        for (int i = 0; i < wps.Length; i++)
+        {
+            wpData.id = i;
+            wpData.position = wps[i].transform.position;
+            scriptable.waypointsData.Add(wpData);
+        }
+
+        //Guardo el scriptable
+        var path = "Assets/WaypointsInfo/wpinfo.asset";
+        path = AssetDatabase.GenerateUniqueAssetPath(path);
+        AssetDatabase.CreateAsset(scriptable, path);
+    }
+
+    //private void LoadWaypoints()
+    //{
+    //}
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -122,32 +200,62 @@ public class PathFindingEditor : EditorWindow
             Handles.DrawDottedLine(_originPoint, MyPosRight, 2);
             Handles.DrawDottedLine(MyPosForward, MyPosForward + Vector3.right * _pathfindingAreaWidth, 2);
             Handles.DrawDottedLine(MyPosRight, MyPosRight + Vector3.forward * _pathfindingAreaLength, 2);
-        }
 
-        if (_enableWPIndicators && _waypointRows > 0 && _waypointColumns > 0)
-        {
-            int id = 0;
-            float xPos = _originPoint.x;
-            float zPos = _originPoint.z;
 
-            var rowDivision = _pathfindingAreaLength / (_waypointRows + 1);
-            var columnDivision = _pathfindingAreaWidth / (_waypointColumns + 1);
-
-            Handles.color = _gizmoColor;
-
-            for (int r = 0; r < _waypointRows; r++)
+            //Dibujo los indicadores donde se setearían los waypoints.
+            if (_enableWPIndicators && !_calculatingPositions && _waypointRows > 0 && _waypointColumns > 0)
             {
-                zPos = (r + 1) * rowDivision + _originPoint.z;
-                for (int c = 0; c < _waypointColumns; c++)
+                int id = 0;
+
+                Handles.color = _gizmoColor;
+
+                for (int i = 0; i < _waypointPositions.Count; i++)
                 {
-                    xPos = (c + 1) * columnDivision + _originPoint.x;
-                    //if (_wiredIndicator)
-                    Handles.SphereHandleCap(id, new Vector3(xPos, _originPoint.y, zPos), Quaternion.identity, _gizmoRadius, EventType.Repaint);
-                    //Handles.DrawSphere(id, new Vector3(xPos, _originPoint.y, zPos), Quaternion.identity, _gizmoRadius);
+                    Handles.SphereHandleCap(id, new Vector3(_waypointPositions[i].x, _originPoint.y, _waypointPositions[i].z),
+                                                Quaternion.identity, _gizmoRadius, EventType.Repaint);
                     id++;
                 }
             }
 
+            Handles.color = Color.white;
+            Handles.DrawDottedLine(_textAreaPosition, _originPoint, 2);
+            Handles.BeginGUI();
+
+            var cmraPoint = Camera.current.WorldToScreenPoint(_textAreaPosition);
+            var rect = new Rect(cmraPoint.x - 75, Screen.height - cmraPoint.y - 150, 200, 50);
+            string text = "Pathfinding Area: " + string.Format("{0}x{1}\n", _pathfindingAreaLength, _pathfindingAreaWidth) +
+                          "Total waypoints: " + _waypointRows * _waypointColumns;
+            GUI.Box(rect, text);
+
+            Handles.EndGUI();
         }
+    }
+
+    private void CalculatePositions()
+    {
+        _calculatingPositions = true;
+
+        float xPos = _originPoint.x;
+        float zPos = _originPoint.z;
+
+        var rowDivision = _pathfindingAreaLength / (_waypointRows + 1);
+        var columnDivision = _pathfindingAreaWidth / (_waypointColumns + 1);
+
+        Vector3 positionToAdd = Vector3.zero;
+
+        _waypointPositions = new List<Vector3>();
+
+        for (int r = 0; r < _waypointRows; r++)
+        {
+            zPos = (r + 1) * rowDivision + _originPoint.z;
+            for (int c = 0; c < _waypointColumns; c++)
+            {
+                xPos = (c + 1) * columnDivision + _originPoint.x;
+                positionToAdd = new Vector3(xPos, _originPoint.y, zPos);
+                _waypointPositions.Add(positionToAdd);
+            }
+        }
+
+        _calculatingPositions = false;
     }
 }
