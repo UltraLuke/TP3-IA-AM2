@@ -17,9 +17,10 @@ public class PathFindingEditor : EditorWindow
     bool _enableWPIndicators = false;
     float _gizmoRadius = .75f;
     Color _gizmoColor;
-
-    //Posiciones waypoints
     List<Vector3> _waypointPositions;
+
+    string _saveFolderPath = "Assets/WaypointsInfo/";
+    string _saveFilename = "wpinfo.asset";
 
     //Indicador area pathfinding
     Vector3 _textAreaPosition;
@@ -65,10 +66,11 @@ public class PathFindingEditor : EditorWindow
             {
                 _waypointGenerationMode = true;
             }
-            EditorGUI.BeginDisabledGroup(true);
+            EditorGUI.BeginDisabledGroup(false);
             if (GUILayout.Button("Cargar waypoints"))
             {
-
+                LoadWaypoints();
+                GenerateWaypoints();
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
@@ -173,20 +175,34 @@ public class PathFindingEditor : EditorWindow
 
         for (int i = 0; i < wps.Length; i++)
         {
-            wpData.id = i;
+            wpData.id = wps[i].gameObject.GetInstanceID();
             wpData.position = wps[i].transform.position;
             scriptable.waypointsData.Add(wpData);
         }
 
         //Guardo el scriptable
-        var path = "Assets/WaypointsInfo/wpinfo.asset";
+        var path = _saveFolderPath + _saveFilename;
         path = AssetDatabase.GenerateUniqueAssetPath(path);
         AssetDatabase.CreateAsset(scriptable, path);
     }
 
-    //private void LoadWaypoints()
-    //{
-    //}
+    private void LoadWaypoints()
+    {
+        //var loadWindow = GetWindow<WPLoad>();
+        //loadWindow.SaveFolderPath = _saveFolderPath;
+        //loadWindow.Show();
+
+        var path = _saveFolderPath + _saveFilename;
+        var scriptable = AssetDatabase.LoadAssetAtPath<WaypointsInfo>(path);
+        var wpsData = scriptable.waypointsData;
+
+        _waypointPositions = new List<Vector3>();
+
+        for (int i = 0; i < wpsData.Count; i++)
+        {
+            _waypointPositions.Add(wpsData[i].position);
+        }
+    }
 
     private void OnSceneGUI(SceneView sceneView)
     {
@@ -222,7 +238,9 @@ public class PathFindingEditor : EditorWindow
             Handles.BeginGUI();
 
             var cmraPoint = Camera.current.WorldToScreenPoint(_textAreaPosition);
-            var rect = new Rect(cmraPoint.x - 75, Screen.height - cmraPoint.y - 150, 200, 50);
+            var cmraRect = Camera.current.pixelHeight;
+            //var  = Camera.current.pixelHeight;
+            var rect = new Rect(cmraPoint.x - 75, cmraRect - cmraPoint.y, 200, 50);
             string text = "Pathfinding Area: " + string.Format("{0}x{1}\n", _pathfindingAreaLength, _pathfindingAreaWidth) +
                           "Total waypoints: " + _waypointRows * _waypointColumns;
             GUI.Box(rect, text);
