@@ -190,7 +190,7 @@ public class PathFindingEditor : EditorWindow
     {
         var loadWindow = GetWindow<WPLoad>();
         loadWindow.SaveFolderPath = _saveFolderPath;
-        loadWindow.WpLoader += LoadWaypoints;
+        loadWindow.wpLoader += LoadWaypoints;
         loadWindow.Show();
     }
 
