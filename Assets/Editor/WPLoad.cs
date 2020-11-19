@@ -5,6 +5,9 @@ using UnityEditor;
 
 public class WPLoad : EditorWindow
 {
+    public delegate void WayPointsLoader(string fileName);
+    public WayPointsLoader wpLoader;
+
     string _saveFolderPath;
     List<WaypointsInfo> _waypointsInfos;
     public string SaveFolderPath { set => _saveFolderPath = value; }
@@ -29,9 +32,20 @@ public class WPLoad : EditorWindow
         }
         else if(_waypointsInfos != null && _waypointsInfos.Count > 0)
         {
+            EditorGUILayout.LabelField("Seleccione el grupo de waypoints a cargar");
             for (int i = 0; i < _waypointsInfos.Count; i++)
             {
+                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.ObjectField(_waypointsInfos[i], typeof(WaypointsInfo), false);
+                if (GUILayout.Button("Load"))
+                {
+                    if(wpLoader != null)
+                    {
+                        var fileName = _waypointsInfos[i].name;
+                        wpLoader(fileName);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
             }
         }
     }

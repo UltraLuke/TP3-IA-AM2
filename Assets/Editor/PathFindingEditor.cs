@@ -69,8 +69,8 @@ public class PathFindingEditor : EditorWindow
             EditorGUI.BeginDisabledGroup(false);
             if (GUILayout.Button("Cargar waypoints"))
             {
-                LoadWaypoints();
-                GenerateWaypoints();
+                OpenLoaderWindow();
+                //GenerateWaypoints();
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
@@ -186,13 +186,17 @@ public class PathFindingEditor : EditorWindow
         AssetDatabase.CreateAsset(scriptable, path);
     }
 
-    private void LoadWaypoints()
+    private void OpenLoaderWindow()
     {
-        //var loadWindow = GetWindow<WPLoad>();
-        //loadWindow.SaveFolderPath = _saveFolderPath;
-        //loadWindow.Show();
+        var loadWindow = GetWindow<WPLoad>();
+        loadWindow.SaveFolderPath = _saveFolderPath;
+        loadWindow.WpLoader += LoadWaypoints;
+        loadWindow.Show();
+    }
 
-        var path = _saveFolderPath + _saveFilename;
+    private void LoadWaypoints(string fileName)
+    {
+        var path = _saveFolderPath + fileName;
         var scriptable = AssetDatabase.LoadAssetAtPath<WaypointsInfo>(path);
         var wpsData = scriptable.waypointsData;
 
@@ -202,6 +206,8 @@ public class PathFindingEditor : EditorWindow
         {
             _waypointPositions.Add(wpsData[i].position);
         }
+
+        GenerateWaypoints();
     }
 
     private void OnSceneGUI(SceneView sceneView)
