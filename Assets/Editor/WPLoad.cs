@@ -43,8 +43,7 @@ public class WPLoad : EditorWindow
                     _loadBtnPressed = true;
                     if (wpLoader != null)
                     {
-                        var fileName = _waypointsInfos[i].name + ".asset";
-                        wpLoader(fileName);
+                        wpLoader(_waypointsInfos[i].name + ".asset");
                         Close();
                     }
                 }
