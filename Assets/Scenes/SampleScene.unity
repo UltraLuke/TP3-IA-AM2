@@ -8051,6 +8051,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1809772271}
   m_PrefabAsset: {fileID: 0}
+--- !u!134 &1814676121
+PhysicMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  dynamicFriction: 0.6
+  staticFriction: 0.6
+  bounciness: 0
+  frictionCombine: 0
+  bounceCombine: 0
 --- !u!1001 &1827859533
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8415,6 +8427,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 924901372}
     m_Modifications:
+    - target: {fileID: 1755183774755843626, guid: 2f6c4572e07a60b43b00e1c4f489a806,
+        type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 1814676121}
     - target: {fileID: 7779381877309823848, guid: 2f6c4572e07a60b43b00e1c4f489a806,
         type: 3}
       propertyPath: m_Name

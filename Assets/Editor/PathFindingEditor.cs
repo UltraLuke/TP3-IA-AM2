@@ -66,7 +66,7 @@ public class PathFindingEditor : EditorWindow
     private void OnDisable()
     {
         SceneView.duringSceneGui -= OnSceneGUI;
-        if(_loadWindow != null) _loadWindow.Close();
+        if (_loadWindow != null) _loadWindow.Close();
     }
 
     private void OnGUI()
@@ -137,10 +137,6 @@ public class PathFindingEditor : EditorWindow
             _setConnections = EditorGUILayout.Toggle("Set connections", _setConnections);
             EditorGUI.BeginDisabledGroup(!_setConnections);
             _radiusDistanceConnection = EditorGUILayout.FloatField("Distance Radius", _radiusDistanceConnection);
-            if(GUILayout.Button("Generate connections"))
-            {
-                //GenerateConnections();
-            }
             EditorGUI.EndDisabledGroup();
 
             rect = EditorGUILayout.GetControlRect(false, 1);
@@ -148,7 +144,11 @@ public class PathFindingEditor : EditorWindow
 
             if (GUILayout.Button("Generate Waypoints"))
             {
-                GenerateWaypoints();
+                GenerateWaypoints(out var nodes);
+
+                if (_setConnections)
+                    GenerateConnections(nodes);
+
                 _waypointGenerationMode = false;
             }
 
@@ -166,7 +166,7 @@ public class PathFindingEditor : EditorWindow
             _gizmoColor = EditorGUILayout.ColorField("Waypoint indicator color", _gizmoColor);
         }
         //Interfaz cuando ya tengo waypoints seteados
-        else if(_wpContainer != null && _wpContainer.transform.childCount > 0)
+        else if (_wpContainer != null && _wpContainer.transform.childCount > 0)
         {
             EditorGUILayout.LabelField("Waypoints");
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - 50)/*GUILayout.Width(withWindow), GUILayout.Height(heightWindow)*/);
@@ -178,26 +178,72 @@ public class PathFindingEditor : EditorWindow
             }
             EditorGUILayout.EndScrollView();
 
-            if(GUILayout.Button("Guardar waypoints"))
+            if (GUILayout.Button("Guardar waypoints"))
             {
                 SaveWaypoints(wps);
             }
         }
     }
 
-    private void GenerateWaypoints()
+    private List<GameObject> GenerateWaypoints()
     {
+        return GenerateWaypoints(out var nodes);
+    }
+
+    private List<GameObject> GenerateWaypoints(out List<Node> nodes)
+    {
+        var objs = new List<GameObject>();
+        nodes = new List<Node>();
+
         if (_wpContainer == null)
         {
             _wpContainer = new GameObject("waypoint_container").AddComponent<WaypointsContainer>();
             _wpContainer.transform.position = Vector3.zero;
         }
 
+        int setID = 0;
         for (int i = 0; i < _waypointData.Count; i++)
         {
             var obj = (GameObject)PrefabUtility.InstantiatePrefab(_waypoint);
             obj.transform.position = _waypointData[i].position;
             obj.transform.parent = _wpContainer.transform;
+
+            if (i != 0 && _waypointData[i].id == 0)
+                setID = i;
+            else
+                setID = _waypointData[i].id;
+
+            objs.Add(obj);
+            nodes.Add(obj.GetComponent<Node>());
+            nodes[i].Id = setID;
+        }
+
+        return objs;
+    }
+
+    private void GenerateConnections(List<Node> nodes)
+    {
+        WaypointData wpData;
+
+        //ELijo un nodo de la lista
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            wpData = _waypointData[i];
+            //Por cada nodo tengo...
+            //1. Obtener el ID propio y guardarlo en _wayPointData
+            wpData.id = nodes[i].Id;
+
+            //2. Generar las conexiones y obtener el ID de los mismos. Guardarlos en _wayPointData
+            nodes[i].RadiusDistance = _radiusDistanceConnection;
+            var connectedNodes = nodes[i].GetNeighbours();
+            wpData.connectedNodesID = new List<int>();
+            //Elijo una de las conexiones de la lista
+            for (int j = 0; j < connectedNodes.Count; j++)
+            {
+                wpData.connectedNodesID.Add(connectedNodes[j].Id);
+            }
+
+            _waypointData[i] = wpData;
         }
     }
 
@@ -209,7 +255,7 @@ public class PathFindingEditor : EditorWindow
 
         for (int i = 0; i < wps.Length; i++)
         {
-            wpData.id = wps[i].gameObject.GetInstanceID();
+            wpData.id = wps[i].Id;
             wpData.position = wps[i].transform.position;
             scriptable.waypointsData.Add(wpData);
         }
@@ -267,12 +313,30 @@ public class PathFindingEditor : EditorWindow
 
                 Handles.color = _gizmoColor;
 
+                if (_waypointData != null)
+                {
+                    for (int i = 0; i < _waypointData.Count; i++)
+                    {
+                        //Handles.SphereHandleCap(id, new Vector3(_waypointPositions[i].x, _originPoint.y, _waypointPositions[i].z),
+                        Handles.SphereHandleCap(id, new Vector3(_waypointData[i].position.x, _originPoint.y, _waypointData[i].position.z),
+                                                    Quaternion.identity, _gizmoRadius, EventType.Repaint);
+                        id++;
+                    }
+                }
+            }
+
+            if (_setConnections || _waypointData != null && !_waypointGenerationMode && (_wpContainer == null || _wpContainer.transform.childCount == 0))
+            {
+                Handles.color = Color.yellow;
                 for (int i = 0; i < _waypointData.Count; i++)
                 {
-                    //Handles.SphereHandleCap(id, new Vector3(_waypointPositions[i].x, _originPoint.y, _waypointPositions[i].z),
-                    Handles.SphereHandleCap(id, new Vector3(_waypointData[i].position.x, _originPoint.y, _waypointData[i].position.z),
-                                                Quaternion.identity, _gizmoRadius, EventType.Repaint);
-                    id++;
+                    var nodesIDs = _waypointData[i].connectedNodesID;
+                    if (nodesIDs == null || nodesIDs.Count == 0) break;
+
+                    for (int j = 0; j < nodesIDs.Count; j++)
+                    {
+                        Handles.DrawLine(_waypointData[i].position, _waypointData[nodesIDs[j]].position);
+                    }
                 }
             }
 
@@ -281,9 +345,10 @@ public class PathFindingEditor : EditorWindow
             Handles.BeginGUI();
 
             var cmraPoint = Camera.current.WorldToScreenPoint(_textAreaPosition);
-            var cmraRect = Camera.current.pixelHeight;
+            var cmraRectHeight = Camera.current.pixelHeight;
+            var cmraRectWidth = Camera.current.pixelWidth;
             //var  = Camera.current.pixelHeight;
-            var rect = new Rect(cmraPoint.x - 75, cmraRect - cmraPoint.y, 200, 50);
+            var rect = new Rect(cmraPoint.x - 75, cmraRectHeight - cmraPoint.y, 200, 50);
             string text = "Pathfinding Area: " + string.Format("{0}x{1}\n", _pathfindingAreaLength, _pathfindingAreaWidth) +
                           "Total waypoints: " + _waypointRows * _waypointColumns;
             GUI.Box(rect, text);

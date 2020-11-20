@@ -5,22 +5,13 @@ using UnityEngine;
 public class Node : MonoBehaviour
 {
     [SerializeField] float radiusDistance;
-    [SerializeField] bool hasTrap;
+    [SerializeField] int _id;
+    //[SerializeField] bool hasTrap;
 
-    private List<Node> neightbourds;
+    [SerializeField] List<Node> neightbourds;
 
-    //Material mat;
-    //private void Start()
-    //{
-    //    mat = GetComponent<Renderer>().material;
-    //}
-    //private void Update()
-    //{
-    //    if (hasTrap)
-    //        mat.color = Color.red;
-    //    else
-    //        mat.color = Color.white;
-    //}
+    public int Id { get => _id; set => _id = value; }
+    public float RadiusDistance {set => radiusDistance = value; }
 
     public List<Node> GetNeighbours()
     {
@@ -29,13 +20,13 @@ public class Node : MonoBehaviour
         //GetNeightbourd(Vector3.forward);
         //GetNeightbourd(Vector3.back);
 
-        Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance, ~gameObject.layer);
         List<Node> newList = new List<Node>();
         Node currentNode;
 
         for (int i = 0; i < colliders.Length; i++)
         {
-            if(colliders[i].gameObject.TryGetComponent(out currentNode))
+            currentNode = colliders[i].gameObject.GetComponent<Node>();
                 newList.Add(currentNode);
         }
         neightbourds = newList;
