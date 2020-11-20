@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 public class PathFindingEditor : EditorWindow
 {
@@ -18,6 +19,11 @@ public class PathFindingEditor : EditorWindow
     float _gizmoRadius = .75f;
     Color _gizmoColor;
     List<Vector3> _waypointPositions;
+
+    //Waypoint obstacles
+    bool _detectObstacles;
+    float _radiusDetection;
+    LayerMask _obstaclesMask;
 
     string _saveFolderPath = "Assets/WaypointsInfo/";
     string _saveFilename = "wpinfo.asset";
@@ -94,7 +100,6 @@ public class PathFindingEditor : EditorWindow
 
             //Si hago un cambio en el area o los waypoints, recalculo las posiciones
             GUILayout.BeginHorizontal();
-
             _pathfindingAreaWidth = EditorGUILayout.FloatField("Width", _pathfindingAreaWidth);
             _pathfindingAreaLength = EditorGUILayout.FloatField("Length", _pathfindingAreaLength);
             GUILayout.EndHorizontal();
@@ -104,12 +109,11 @@ public class PathFindingEditor : EditorWindow
             _waypointColumns = EditorGUILayout.IntField("Columns", _waypointColumns);
             GUILayout.EndHorizontal();
             _originPoint = EditorGUILayout.Vector3Field("Origin Point", _originPoint);
+            _detectObstacles = EditorGUILayout.Toggle("Don't instantiate near obstacles", _detectObstacles);
+            _radiusDetection = EditorGUILayout.FloatField("Radius Detection", _radiusDetection);
 
-            if(GUILayout.Button("Generate Waypoints"))
-            {
-                GenerateWaypoints();
-                _waypointGenerationMode = false;
-            }
+            LayerMask tempMask = EditorGUILayout.MaskField("Obstacles mask", InternalEditorUtility.LayerMaskToConcatenatedLayersMask(_obstaclesMask), InternalEditorUtility.layers);
+            _obstaclesMask = InternalEditorUtility.ConcatenatedLayersMaskToLayerMask(tempMask);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -117,8 +121,15 @@ public class PathFindingEditor : EditorWindow
                 _pathfindingAreaLength = _pathfindingAreaLength < 0 ? 0 : _pathfindingAreaLength;
                 _waypointRows = _waypointRows < 1 ? 1 : _waypointRows;
                 _waypointColumns = _waypointColumns < 1 ? 1 : _waypointColumns;
+                _radiusDetection = _radiusDetection < 0 ? 0 : _radiusDetection;
 
                 CalculatePositions();
+            }
+
+            if (GUILayout.Button("Generate Waypoints"))
+            {
+                GenerateWaypoints();
+                _waypointGenerationMode = false;
             }
 
             _textAreaPosition = _originPoint + new Vector3(-1, 0, -1);
@@ -279,10 +290,18 @@ public class PathFindingEditor : EditorWindow
             {
                 xPos = (c + 1) * columnDivision + _originPoint.x;
                 positionToAdd = new Vector3(xPos, _originPoint.y, zPos);
-                _waypointPositions.Add(positionToAdd);
+
+                if (!_detectObstacles || !CheckIfObstaclesNear(positionToAdd))
+                    _waypointPositions.Add(positionToAdd);
             }
         }
 
         _calculatingPositions = false;
+    }
+
+    private bool CheckIfObstaclesNear(Vector3 positionToAdd)
+    {
+        Collider[] colliders = Physics.OverlapSphere(positionToAdd, _radiusDetection, _obstaclesMask);
+        return colliders.Length > 0;
     }
 }
