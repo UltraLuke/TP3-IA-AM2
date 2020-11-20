@@ -8,6 +8,7 @@ public class WPLoad : EditorWindow
     public delegate void WayPointsLoader(string fileName);
     public WayPointsLoader wpLoader;
 
+    bool _loadBtnPressed = false;
     string _saveFolderPath;
     List<WaypointsInfo> _waypointsInfos;
     public string SaveFolderPath { set => _saveFolderPath = value; }
@@ -19,7 +20,7 @@ public class WPLoad : EditorWindow
 
     private void OnGUI()
     {
-        if(_saveFolderPath != null && (_waypointsInfos == null || _waypointsInfos.Count <= 0))
+        if (_saveFolderPath != null && (_waypointsInfos == null || _waypointsInfos.Count <= 0))
         {
             var wpInfosGUID = AssetDatabase.FindAssets("t:WaypointsInfo");
 
@@ -30,7 +31,7 @@ public class WPLoad : EditorWindow
                 _waypointsInfos.Add(wp);
             }
         }
-        else if(_waypointsInfos != null && _waypointsInfos.Count > 0)
+        else if (_waypointsInfos != null && _waypointsInfos.Count > 0)
         {
             EditorGUILayout.LabelField("Seleccione el grupo de waypoints a cargar");
             for (int i = 0; i < _waypointsInfos.Count; i++)
@@ -39,10 +40,12 @@ public class WPLoad : EditorWindow
                 EditorGUILayout.ObjectField(_waypointsInfos[i], typeof(WaypointsInfo), false);
                 if (GUILayout.Button("Load"))
                 {
-                    if(wpLoader != null)
+                    _loadBtnPressed = true;
+                    if (wpLoader != null)
                     {
-                        var fileName = _waypointsInfos[i].name;
+                        var fileName = _waypointsInfos[i].name + ".asset";
                         wpLoader(fileName);
+                        Close();
                     }
                 }
                 EditorGUILayout.EndHorizontal();

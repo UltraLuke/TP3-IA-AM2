@@ -27,6 +27,8 @@ public class PathFindingEditor : EditorWindow
 
     Vector2 scrollPos;
 
+    //Ventana Loader
+    WPLoad _loadWindow;
 
     //Flags
     bool _waypointsInScene;
@@ -53,6 +55,7 @@ public class PathFindingEditor : EditorWindow
     private void OnDisable()
     {
         SceneView.duringSceneGui -= OnSceneGUI;
+        _loadWindow.Close();
     }
 
     private void OnGUI()
@@ -188,10 +191,10 @@ public class PathFindingEditor : EditorWindow
 
     private void OpenLoaderWindow()
     {
-        var loadWindow = GetWindow<WPLoad>();
-        loadWindow.SaveFolderPath = _saveFolderPath;
-        loadWindow.wpLoader += LoadWaypoints;
-        loadWindow.Show();
+        _loadWindow = GetWindow<WPLoad>();
+        _loadWindow.SaveFolderPath = _saveFolderPath;
+        _loadWindow.wpLoader += LoadWaypoints;
+        _loadWindow.Show();
     }
 
     private void LoadWaypoints(string fileName)
