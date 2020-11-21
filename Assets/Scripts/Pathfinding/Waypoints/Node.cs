@@ -12,19 +12,19 @@ public class Node : MonoBehaviour
 
 
     public int Id { get => _id; set => _id = value; }
-    public float RadiusDistance {set => radiusDistance = value; }
+    public float RadiusDistance { set => radiusDistance = value; }
 
     public List<Node> GetNeighbours()
     {
         Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance, layerToDetect);
-        Debug.Log(colliders.Length);
         List<Node> newList = new List<Node>();
         Node currentNode;
 
         for (int i = 0; i < colliders.Length; i++)
         {
             currentNode = colliders[i].gameObject.GetComponent<Node>();
-                newList.Add(currentNode);
+            //Debug.Log(currentNode.transform.position);
+            newList.Add(currentNode);
         }
         neightbourds = newList;
         return neightbourds;
@@ -48,5 +48,14 @@ public class Node : MonoBehaviour
     {
         Gizmos.color = new Color(1f, .63f, .15f);
         Gizmos.DrawWireSphere(transform.position, radiusDistance);
+
+        if (neightbourds != null && neightbourds.Count != 0)
+        {
+            Gizmos.color = Color.yellow;
+            for (int i = 0; i < neightbourds.Count; i++)
+            {
+                Gizmos.DrawLine(transform.position, neightbourds[i].transform.position);
+            }
+        }
     }
 }

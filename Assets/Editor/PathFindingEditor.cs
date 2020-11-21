@@ -325,20 +325,20 @@ public class PathFindingEditor : EditorWindow
                 }
             }
 
-            if (_setConnections || _waypointData != null && !_waypointGenerationMode && (_wpContainer == null || _wpContainer.transform.childCount == 0))
-            {
-                Handles.color = Color.yellow;
-                for (int i = 0; i < _waypointData.Count; i++)
-                {
-                    var nodesIDs = _waypointData[i].connectedNodesID;
-                    if (nodesIDs == null || nodesIDs.Count == 0) break;
+            //if (_setConnections || _waypointData != null && !_waypointGenerationMode && (_wpContainer == null || _wpContainer.transform.childCount == 0))
+            //{
+            //    Handles.color = Color.yellow;
+            //    for (int i = 0; i < _waypointData.Count; i++)
+            //    {
+            //        var nodesIDs = _waypointData[i].connectedNodesID;
+            //        if (nodesIDs == null || nodesIDs.Count == 0) break;
 
-                    for (int j = 0; j < nodesIDs.Count; j++)
-                    {
-                        Handles.DrawLine(_waypointData[i].position, _waypointData[nodesIDs[j]].position);
-                    }
-                }
-            }
+            //        for (int j = 0; j < nodesIDs.Count; j++)
+            //        {
+            //            Handles.DrawLine(_waypointData[i].position, _waypointData[nodesIDs[j]].position);
+            //        }
+            //    }
+            //}
 
             Handles.color = Color.white;
             Handles.DrawDottedLine(_textAreaPosition, _originPoint, 2);
