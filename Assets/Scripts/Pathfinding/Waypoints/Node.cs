@@ -6,21 +6,18 @@ public class Node : MonoBehaviour
 {
     [SerializeField] float radiusDistance;
     [SerializeField] int _id;
+    [SerializeField] LayerMask layerToDetect;
+    [SerializeField] List<Node> neightbourds;
     //[SerializeField] bool hasTrap;
 
-    [SerializeField] List<Node> neightbourds;
 
     public int Id { get => _id; set => _id = value; }
     public float RadiusDistance {set => radiusDistance = value; }
 
     public List<Node> GetNeighbours()
     {
-        //GetNeightbourd(Vector3.right);
-        //GetNeightbourd(Vector3.left);
-        //GetNeightbourd(Vector3.forward);
-        //GetNeightbourd(Vector3.back);
-
-        Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance, ~gameObject.layer);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance, layerToDetect);
+        Debug.Log(colliders.Length);
         List<Node> newList = new List<Node>();
         Node currentNode;
 
@@ -33,19 +30,19 @@ public class Node : MonoBehaviour
         return neightbourds;
     }
 
-    void GetNeightbourd(Vector3 dir)
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, dir, out hit, 2.2f))
-        {
-            if (neightbourds == null)
-                neightbourds = new List<Node>();
+    //void GetNeightbourd(Vector3 dir)
+    //{
+    //    RaycastHit hit;
+    //    if (Physics.Raycast(transform.position, dir, out hit, 2.2f))
+    //    {
+    //        if (neightbourds == null)
+    //            neightbourds = new List<Node>();
 
-            var node = hit.collider.GetComponent<Node>();
-            if (node != null)
-                neightbourds.Add(node);
-        }
-    }
+    //        var node = hit.collider.GetComponent<Node>();
+    //        if (node != null)
+    //            neightbourds.Add(node);
+    //    }
+    //}
 
     private void OnDrawGizmosSelected()
     {

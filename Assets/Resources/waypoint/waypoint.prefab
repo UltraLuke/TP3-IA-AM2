@@ -107,4 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   radiusDistance: 1
   _id: 0
+  layerToDetect:
+    serializedVersion: 2
+    m_Bits: 512
   neightbourds: []
