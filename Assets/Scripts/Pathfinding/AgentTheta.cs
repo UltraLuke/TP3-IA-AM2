@@ -11,6 +11,7 @@ public class AgentTheta : MonoBehaviour
 
     private Node init;
     private Node finit;
+    private Vector3 finPos;
     private PlayerController pj;
     List<Node> _list;
     List<Vector3> _listVector;
@@ -18,6 +19,7 @@ public class AgentTheta : MonoBehaviour
 
     public Node Init { get => init; set => init = value; }
     public Node Finit { get => finit; set => finit = value; }
+    public Vector3 FinPos { get => finPos; set => finPos = value; }
 
     private void Awake()
     {
@@ -27,12 +29,11 @@ public class AgentTheta : MonoBehaviour
     public void PathFindingTheta()
     {
         _list = _theta.Run(init, Satisfies, GetNeighbours, GetCost, Heuristic, InSight);
-        pj.SetWayPoints(_list);
+        pj.SetWayPoints(_list, finPos);
     }
 
     bool InSight(Node gP, Node gC)
     {
-        Debug.Log(gP + "   " + gC);
         var dir = gC.transform.position - gP.transform.position;
         if (Physics.Raycast(gP.transform.position, dir.normalized, dir.magnitude, mask))
         {
@@ -43,7 +44,7 @@ public class AgentTheta : MonoBehaviour
 
     float Heuristic(Node curr)
     {
-        return Vector3.Distance(curr.transform.position, finit.transform.position);
+        return Vector3.Distance(curr.transform.position, finPos);
     }
     float GetCost(Node from, Node to)
     {
@@ -63,8 +64,9 @@ public class AgentTheta : MonoBehaviour
         Gizmos.color = Color.red;
         if (init != null)
             Gizmos.DrawSphere(init.transform.position + offset, radius);
-        if (finit != null)
-            Gizmos.DrawSphere(finit.transform.position + offset, radius);
+        //if (finit != null)
+        //    Gizmos.DrawSphere(finit.transform.position + offset, radius);
+        Gizmos.DrawSphere(finPos, radius);
         if (_list != null)
         {
             Gizmos.color = Color.blue;
@@ -74,15 +76,16 @@ public class AgentTheta : MonoBehaviour
                     Gizmos.DrawSphere(item.transform.position + offset, radius);
             }
         }
-        if (_listVector != null)
-        {
-            Gizmos.color = Color.green;
-            foreach (var item in _listVector)
-            {
-                if (item != init.transform.position && item != finit.transform.position)
-                    Gizmos.DrawSphere(item + offset, radius);
-            }
-        }
+
+        //if (_listVector != null)
+        //{
+        //    Gizmos.color = Color.green;
+        //    foreach (var item in _listVector)
+        //    {
+        //        if (item != init.transform.position && item != finit.transform.position)
+        //            Gizmos.DrawSphere(item + offset, radius);
+        //    }
+        //}
 
     }
 }

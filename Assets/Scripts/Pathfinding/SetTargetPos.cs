@@ -7,6 +7,8 @@ public class SetTargetPos : MonoBehaviour
 {
     [SerializeField] GameObject waypointObj;
     [SerializeField] Vector3 _clickPlaneReference;
+    [SerializeField] [Range(0, 20)] float _areaDetection;
+    [SerializeField] LayerMask _layerToDetect;
     Plane _plane;
     //Vector3 _clickPoint = Vector3.zero;
     bool _clicked = false;
@@ -36,31 +38,71 @@ public class SetTargetPos : MonoBehaviour
         }
         else if (Input.GetMouseButtonUp(0))
         {
+            bool validateClick = false;
             Ray ray = _cmra.ScreenPointToRay(Input.mousePosition);
 
             if (_plane.Raycast(ray, out float enter))
             {
                 var hitPoint = ray.GetPoint(enter);
-                Vector3 initPos = new Vector3(transform.position.x, _clickPlaneReference.y, transform.position.z);
 
-                if (initPos == null || finitNode == null)
+                if((initNode = GetNearestNodeToTarget(transform.position, hitPoint)) &&
+                   (finitNode = GetNearestNodeToTarget(hitPoint, transform.position)))
                 {
-                    GameObject initObj = Instantiate(waypointObj, initPos, Quaternion.identity);
-                    GameObject finitObj = Instantiate(waypointObj, hitPoint, Quaternion.identity);
-                    initObj.name = "initNode";
-                    finitObj.name = "finitNode";
-                    _agentTheta.Init = initNode = initObj.GetComponent<Node>();
-                    _agentTheta.Finit = finitNode = finitObj.GetComponent<Node>();
-                }
-                else
-                {
-                    initNode.transform.position = initPos;
-                    finitNode.transform.position = hitPoint;
+                    validateClick = true;
                 }
 
-                _clicked = true;
+                if (validateClick)
+                {
+                    _agentTheta.Init = initNode;
+                    _agentTheta.Finit = finitNode;
+                    _agentTheta.FinPos = hitPoint;
+                    _clicked = true;
+                }
+
+
+                //Vector3 initPos = new Vector3(transform.position.x, _clickPlaneReference.y, transform.position.z);
+
+                //if (initPos == null || finitNode == null)
+                //{
+                //    GameObject initObj = Instantiate(waypointObj, initPos, Quaternion.identity);
+                //    GameObject finitObj = Instantiate(waypointObj, hitPoint, Quaternion.identity);
+                //    initObj.name = "initNode";
+                //    finitObj.name = "finitNode";
+                //    _agentTheta.Init = initNode = initObj.GetComponent<Node>();
+                //    _agentTheta.Finit = finitNode = finitObj.GetComponent<Node>();
+                //}
+                //else
+                //{
+                //    initNode.transform.position = initPos;
+                //    finitNode.transform.position = hitPoint;
+                //}
+
             }
         }
+    }
+
+    private Node GetNearestNodeToTarget(Vector3 start, Vector3 target)
+    {
+        float distance = 0f;
+        Node closestNode = null;
+
+        Collider[] nodes = Physics.OverlapSphere(/*transform.position*/ start, _areaDetection, _layerToDetect);
+
+        if (nodes == null) return null;
+        for (int i = 0; i < nodes.Length; i++)
+        {
+            float newDistance = Vector3.Distance(nodes[i].transform.position, target);
+
+            //Si initNode es nulo, lo asigno directamente
+            //Si la distancia entre el punto y el nodo es menor que el que tengo guardado, lo asigno tambien
+            if (closestNode == null || newDistance < distance)
+            {
+                closestNode = nodes[i].GetComponent<Node>();
+                distance = newDistance;
+            }
+        }
+
+        return closestNode;
     }
 
     private void OnDrawGizmosSelected()
