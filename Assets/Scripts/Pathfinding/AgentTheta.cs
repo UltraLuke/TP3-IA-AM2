@@ -12,7 +12,6 @@ public class AgentTheta : MonoBehaviour
     private Node init;
     private Node finit;
     private PlayerController pj;
-    //public Box box;
     List<Node> _list;
     List<Vector3> _listVector;
     Theta<Node> _theta = new Theta<Node>();
@@ -29,7 +28,6 @@ public class AgentTheta : MonoBehaviour
     {
         _list = _theta.Run(init, Satisfies, GetNeighbours, GetCost, Heuristic, InSight);
         pj.SetWayPoints(_list);
-        //box.SetWayPoints(_list);
     }
 
     bool InSight(Node gP, Node gC)
@@ -51,10 +49,10 @@ public class AgentTheta : MonoBehaviour
     {
         return Vector3.Distance(from.transform.position, to.transform.position);
     }
-    
+
     List<Node> GetNeighbours(Node curr)
     {
-        return curr.GetNeighbours();
+        return curr.Neighbours;
     }
     bool Satisfies(Node curr)
     {

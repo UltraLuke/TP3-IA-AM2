@@ -59,7 +59,6 @@ public class SetTargetPos : MonoBehaviour
                 }
 
                 _clicked = true;
-                //_agentTheta.PathFindingTheta(hitPoint);
             }
         }
     }

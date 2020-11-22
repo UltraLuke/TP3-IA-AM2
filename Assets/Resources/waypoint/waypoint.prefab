@@ -105,9 +105,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c63cde3eda5eb074082dc0e634add256, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radiusDistance: 0
   _id: 0
+  radiusDistance: 0
   layerToDetect:
     serializedVersion: 2
     m_Bits: 512
-  neightbourds: []
+  layerObstacle:
+    serializedVersion: 2
+    m_Bits: 1024
+  neighbours: []

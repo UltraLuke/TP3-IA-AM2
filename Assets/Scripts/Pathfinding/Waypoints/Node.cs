@@ -8,13 +8,13 @@ public class Node : MonoBehaviour
     [SerializeField] float radiusDistance;
     [SerializeField] LayerMask layerToDetect;
     [SerializeField] LayerMask layerObstacle;
-    [SerializeField] List<Node> neightbourds;
-    //[SerializeField] bool hasTrap;
+    [SerializeField] List<Node> neighbours;
 
     public int Id { get => _id; set => _id = value; }
     public float RadiusDistance { set => radiusDistance = value; }
+    public List<Node> Neighbours { get => neighbours; }
 
-    public List<Node> GetNeighbours()
+    public List<Node> SetNewNeighbours()
     {
         Collider[] colliders = Physics.OverlapSphere(transform.position, radiusDistance, layerToDetect);
         List<Node> newList = new List<Node>();
@@ -24,11 +24,11 @@ public class Node : MonoBehaviour
         {
             currentNode = colliders[i].gameObject.GetComponent<Node>();
 
-            if(currentNode != this && NodeInSight(currentNode))
-            newList.Add(currentNode);
+            if (currentNode != this && NodeInSight(currentNode))
+                newList.Add(currentNode);
         }
-        neightbourds = newList;
-        return neightbourds;
+        neighbours = newList;
+        return neighbours;
     }
 
     bool NodeInSight(Node node)
@@ -46,12 +46,12 @@ public class Node : MonoBehaviour
         Gizmos.color = new Color(1f, .63f, .15f);
         Gizmos.DrawWireSphere(transform.position, radiusDistance);
 
-        if (neightbourds != null && neightbourds.Count != 0)
+        if (neighbours != null && neighbours.Count != 0)
         {
             Gizmos.color = Color.yellow;
-            for (int i = 0; i < neightbourds.Count; i++)
+            for (int i = 0; i < neighbours.Count; i++)
             {
-                Gizmos.DrawLine(transform.position, neightbourds[i].transform.position);
+                Gizmos.DrawLine(transform.position, neighbours[i].transform.position);
             }
         }
     }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 public class PathFindingEditor : EditorWindow
 {
@@ -224,11 +226,13 @@ public class PathFindingEditor : EditorWindow
     {
         var objs = new List<GameObject>();
         nodes = new List<Node>();
+        var undoID = Undo.GetCurrentGroup();
 
         if (_wpContainer == null)
         {
             _wpContainer = new GameObject("waypoint_container").AddComponent<WaypointsContainer>();
             _wpContainer.transform.position = Vector3.zero;
+            Undo.RegisterCreatedObjectUndo(_wpContainer, "Object created");
         }
 
         int setID = 0;
@@ -246,7 +250,12 @@ public class PathFindingEditor : EditorWindow
             objs.Add(obj);
             nodes.Add(obj.GetComponent<Node>());
             nodes[i].Id = setID;
+
+            Undo.RegisterCreatedObjectUndo(obj, "Object created");
         }
+
+        //EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        Undo.CollapseUndoOperations(undoID);
 
         return objs;
     }
@@ -254,6 +263,7 @@ public class PathFindingEditor : EditorWindow
     private void GenerateConnections(List<Node> nodes)
     {
         WaypointData wpData;
+        //var undoID = Undo.GetCurrentGroup();
 
         //ELijo un nodo de la lista
         for (int i = 0; i < nodes.Count; i++)
@@ -265,7 +275,9 @@ public class PathFindingEditor : EditorWindow
 
             //2. Generar las conexiones y obtener el ID de los mismos. Guardarlos en _wayPointData
             nodes[i].RadiusDistance = _radiusDistanceConnection;
-            var connectedNodes = nodes[i].GetNeighbours();
+            var connectedNodes = nodes[i].SetNewNeighbours();
+            PrefabUtility.RecordPrefabInstancePropertyModifications(nodes[i]);
+            //Undo.RegisterCompleteObjectUndo(nodes[i].gameObject, "Nodes connected");
             wpData.connectedNodesID = new List<int>();
             //Elijo una de las conexiones de la lista
             for (int j = 0; j < connectedNodes.Count; j++)
@@ -274,7 +286,12 @@ public class PathFindingEditor : EditorWindow
             }
 
             _waypointData[i] = wpData;
+
+            //EditorFixes.SetObjectDirty(nodes[i].gameObject);
         }
+
+        //EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        //Undo.CollapseUndoOperations(undoID);
     }
 
     private void SaveWaypoints(Node[] wps)

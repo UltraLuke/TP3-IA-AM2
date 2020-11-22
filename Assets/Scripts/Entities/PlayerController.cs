@@ -24,7 +24,6 @@ public class PlayerController : MonoBehaviour
     {
         _nextPoint = 0;
         if (newPoints.Count == 0) return;
-        //_anim.Play("CIA_Idle");
         waypoints = newPoints;
         var pos = waypoints[_nextPoint].transform.position;
         pos.y = transform.position.y;
@@ -44,8 +43,6 @@ public class PlayerController : MonoBehaviour
             else
             {
                 readyToMove = false;
-                //_anim.SetTrigger("Finish");
-                //_anim.SetFloat("Vel", 0);
                 return;
             }
         }
