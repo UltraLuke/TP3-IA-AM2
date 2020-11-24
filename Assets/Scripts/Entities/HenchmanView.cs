@@ -22,7 +22,8 @@ public class HenchmanView : MonoBehaviour
 
     public void SetColor(Color color)
     {
-        _renderer.material.color = color;
+        if(_renderer != null)
+            _renderer.material.color = color;
 
         if(_colorables == null)
             _colorables = GetComponentsInChildren<IColorable>();
