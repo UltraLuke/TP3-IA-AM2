@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CohesionBehavior : MonoBehaviour, IFlockBehavior
 {
-    public float CohesionWeight;
+    public float cohesionWeight;
     public Vector3 GetDir(List<IFlockEntity> entities, IFlockEntity entity)
     {
         Vector3 center = Vector3.zero;
@@ -13,6 +13,6 @@ public class CohesionBehavior : MonoBehaviour, IFlockBehavior
             center += entities[i].Position;
         }
         center /= entities.Count;
-        return (center - entity.Position).normalized * CohesionWeight;
+        return (center - entity.Position).normalized * cohesionWeight;
     }
 }

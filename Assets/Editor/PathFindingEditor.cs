@@ -24,7 +24,6 @@ public class PathFindingEditor : EditorWindow
     bool _enableWPIndicators = true;
     float _gizmoRadius = .75f;
     Color _gizmoColor = new Color(0.34f, 0.84f, 0.86f, 0.6f);
-    //List<Vector3> _waypointPositions;
     List<WaypointData> _waypointData;
 
     //Waypoint obstacles
@@ -98,7 +97,6 @@ public class PathFindingEditor : EditorWindow
             if (GUILayout.Button("Cargar waypoints"))
             {
                 OpenLoaderWindow();
-                //GenerateWaypoints();
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
@@ -254,7 +252,6 @@ public class PathFindingEditor : EditorWindow
             Undo.RegisterCreatedObjectUndo(obj, "Object created");
         }
 
-        //EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
         Undo.CollapseUndoOperations(undoID);
 
         return objs;
@@ -277,8 +274,8 @@ public class PathFindingEditor : EditorWindow
             nodes[i].RadiusDistance = _radiusDistanceConnection;
             var connectedNodes = nodes[i].SetNewNeighbours();
             PrefabUtility.RecordPrefabInstancePropertyModifications(nodes[i]);
-            //Undo.RegisterCompleteObjectUndo(nodes[i].gameObject, "Nodes connected");
             wpData.connectedNodesID = new List<int>();
+
             //Elijo una de las conexiones de la lista
             for (int j = 0; j < connectedNodes.Count; j++)
             {
@@ -286,8 +283,6 @@ public class PathFindingEditor : EditorWindow
             }
 
             _waypointData[i] = wpData;
-
-            //EditorFixes.SetObjectDirty(nodes[i].gameObject);
         }
 
         //EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
@@ -327,12 +322,10 @@ public class PathFindingEditor : EditorWindow
         var scriptable = AssetDatabase.LoadAssetAtPath<WaypointsInfo>(path);
         var wpsData = scriptable.waypointsData;
 
-        //_waypointPositions = new List<Vector3>();
         _waypointData = new List<WaypointData>();
 
         for (int i = 0; i < wpsData.Count; i++)
         {
-            //_waypointPositions.Add(wpsData[i].position);
             _waypointData.Add(wpsData[i]);
         }
 
@@ -364,7 +357,6 @@ public class PathFindingEditor : EditorWindow
                 {
                     for (int i = 0; i < _waypointData.Count; i++)
                     {
-                        //Handles.SphereHandleCap(id, new Vector3(_waypointPositions[i].x, _originPoint.y, _waypointPositions[i].z),
                         Handles.SphereHandleCap(id, new Vector3(_waypointData[i].position.x, _originPoint.y, _waypointData[i].position.z),
                                                     Quaternion.identity, _gizmoRadius, EventType.Repaint);
                         id++;
@@ -381,7 +373,6 @@ public class PathFindingEditor : EditorWindow
             var cmraPoint = Camera.current.WorldToScreenPoint(_textAreaPosition);
             var cmraRectHeight = Camera.current.pixelHeight;
             var cmraRectWidth = Camera.current.pixelWidth;
-            //var  = Camera.current.pixelHeight;
             var rect = new Rect(cmraPoint.x - 75, cmraRectHeight - cmraPoint.y, 200, 50);
             string text = "Pathfinding Area: " + string.Format("{0}x{1}\n", _pathfindingAreaLength, _pathfindingAreaWidth) +
                           "Total waypoints: " + _waypointRows * _waypointColumns;
@@ -421,7 +412,6 @@ public class PathFindingEditor : EditorWindow
 
         Vector3 positionToAdd;
 
-        //_waypointPositions = new List<Vector3>();
         _waypointData = new List<WaypointData>();
 
         for (int r = 0; r < _waypointRows; r++)

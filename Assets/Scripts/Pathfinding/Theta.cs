@@ -21,7 +21,6 @@ public class Theta<T>
         {
             T current = pending.Dequeue();
             watchDong--;
-            Debug.Log(watchDong);
             if (watchDong <= 0) return new List<T>();
             if (satisfies(current))
             {

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EntityModel : MonoBehaviour
 {
-    [SerializeField] protected float speed;
-    [SerializeField] protected float speedRot;
+    public float speed;
+    public float speedRot;
 
     public virtual void Move(Vector3 dir)
     {

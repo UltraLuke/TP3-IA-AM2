@@ -10,7 +10,6 @@ public class SetTargetPos : MonoBehaviour
     [SerializeField] [Range(0, 20)] float _areaDetection;
     [SerializeField] LayerMask _layerToDetect;
     Plane _plane;
-    //Vector3 _clickPoint = Vector3.zero;
     bool _clicked = false;
 
     Camera _cmra;
@@ -58,25 +57,6 @@ public class SetTargetPos : MonoBehaviour
                     _agentTheta.FinPos = hitPoint;
                     _clicked = true;
                 }
-
-
-                //Vector3 initPos = new Vector3(transform.position.x, _clickPlaneReference.y, transform.position.z);
-
-                //if (initPos == null || finitNode == null)
-                //{
-                //    GameObject initObj = Instantiate(waypointObj, initPos, Quaternion.identity);
-                //    GameObject finitObj = Instantiate(waypointObj, hitPoint, Quaternion.identity);
-                //    initObj.name = "initNode";
-                //    finitObj.name = "finitNode";
-                //    _agentTheta.Init = initNode = initObj.GetComponent<Node>();
-                //    _agentTheta.Finit = finitNode = finitObj.GetComponent<Node>();
-                //}
-                //else
-                //{
-                //    initNode.transform.position = initPos;
-                //    finitNode.transform.position = hitPoint;
-                //}
-
             }
         }
     }

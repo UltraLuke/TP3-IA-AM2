@@ -64,8 +64,6 @@ public class AgentTheta : MonoBehaviour
         Gizmos.color = Color.red;
         if (init != null)
             Gizmos.DrawSphere(init.transform.position + offset, radius);
-        //if (finit != null)
-        //    Gizmos.DrawSphere(finit.transform.position + offset, radius);
         Gizmos.DrawSphere(finPos, radius);
         if (_list != null)
         {
@@ -76,16 +74,5 @@ public class AgentTheta : MonoBehaviour
                     Gizmos.DrawSphere(item.transform.position + offset, radius);
             }
         }
-
-        //if (_listVector != null)
-        //{
-        //    Gizmos.color = Color.green;
-        //    foreach (var item in _listVector)
-        //    {
-        //        if (item != init.transform.position && item != finit.transform.position)
-        //            Gizmos.DrawSphere(item + offset, radius);
-        //    }
-        //}
-
     }
 }
