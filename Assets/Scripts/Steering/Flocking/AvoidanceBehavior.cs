@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PredatorBehavior : MonoBehaviour, IFlockBehavior
+public class AvoidanceBehavior : MonoBehaviour, IFlockBehavior
 {
-    public float predatorWeight;
+    public float avoidanceWeight;
     public LayerMask mask;
     public float range;
     public Vector3 GetDir(List<IFlockEntity> entities, IFlockEntity entity)
@@ -16,9 +16,13 @@ public class PredatorBehavior : MonoBehaviour, IFlockBehavior
             var currEntity = obj[i];
             Vector3 currDir = (entity.Position - currEntity.transform.position);
             float distance = currDir.magnitude;
+            if (distance > range)
+            {
+                distance = 0.1f;
+            }
             currDir = currDir.normalized * (range - distance);
             dir += currDir;
         }
-        return dir * predatorWeight;
+        return dir * avoidanceWeight;
     }
 }
