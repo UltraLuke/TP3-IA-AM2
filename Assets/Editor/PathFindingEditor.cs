@@ -173,16 +173,14 @@ public class PathFindingEditor : EditorWindow
         //Interfaz cuando ya tengo waypoints seteados
         else if (_wpContainer != null && _wpContainer.transform.childCount > 0)
         {
+            //Conecciones
             EditorGUILayout.LabelField("Connections", _headerStyle);
 
             EditorGUI.BeginChangeCheck();
-
             _setConnections = EditorGUILayout.Toggle("Enable connections", _setConnections);
-
             EditorGUI.BeginDisabledGroup(!_setConnections);
             _radiusDistanceConnection = EditorGUILayout.FloatField("Distance Radius", _radiusDistanceConnection);
             EditorGUI.EndDisabledGroup();
-
             if (EditorGUI.EndChangeCheck()) _disableConnectionsButton = true;
 
             EditorGUI.BeginDisabledGroup(!_disableConnectionsButton);
@@ -193,24 +191,30 @@ public class PathFindingEditor : EditorWindow
             EditorGUI.EndDisabledGroup();
 
 
-
-
             var rect = EditorGUILayout.GetControlRect(false, 1);
             EditorGUI.DrawRect(rect, Color.gray);
 
             EditorGUILayout.LabelField("Waypoints", _headerStyle);
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - 50)/*GUILayout.Width(withWindow), GUILayout.Height(heightWindow)*/);
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - 130));
 
-            Node[] wps = _wpContainer.transform.GetComponentsInChildren<Node>();
-            for (int i = 0; i < wps.Length; i++)
+            //Node[] wps = _wpContainer.transform.GetComponentsInChildren<Node>();
+            _wpContainer.transform.GetComponentsInChildren(_nodes);
+            //for (int i = 0; i < wps.Length; i++)
+            //{
+            //    EditorGUILayout.ObjectField(wps[i].gameObject, typeof(GameObject), true);
+            //}
+            for (int i = 0; i < _nodes.Count; i++)
             {
-                EditorGUILayout.ObjectField(wps[i].gameObject, typeof(GameObject), true);
+                EditorGUILayout.ObjectField(_nodes[i].gameObject, typeof(GameObject), true);
             }
             EditorGUILayout.EndScrollView();
 
-            if (GUILayout.Button("Guardar waypoints"))
+            rect = EditorGUILayout.GetControlRect(false, 1);
+            EditorGUI.DrawRect(rect, Color.gray);
+
+            if (GUILayout.Button("Save waypoints"))
             {
-                SaveWaypoints(wps);
+                //SaveWaypoints(wps);
             }
         }
     }
@@ -256,6 +260,18 @@ public class PathFindingEditor : EditorWindow
 
         return objs;
     }
+    //private List<Node> GetNodesFromWaypoints(List<GameObject> nodesGO)
+    //{
+    //    List<Node> nodes = new List<Node>();
+    //    for (int i = 0; i < nodesGO.Count; i++)
+    //    {
+    //        if (nodesGO[i].TryGetComponent<Node>(out var tempNode))
+    //        {
+    //            nodes.Add(tempNode);
+    //        }
+    //    }
+    //    return nodes;
+    //}
 
     private void GenerateConnections(List<Node> nodes)
     {
@@ -364,7 +380,7 @@ public class PathFindingEditor : EditorWindow
                 }
             }
 
-            
+
 
             Handles.color = Color.white;
             Handles.DrawDottedLine(_textAreaPosition, _originPoint, 2);

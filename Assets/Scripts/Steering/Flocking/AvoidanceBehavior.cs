@@ -18,7 +18,7 @@ public class AvoidanceBehavior : MonoBehaviour, IFlockBehavior
             float distance = currDir.magnitude;
             if (distance > range)
             {
-                distance = 0.1f;
+                distance = range - 0.1f;
             }
             currDir = currDir.normalized * (range - distance);
             dir += currDir;
