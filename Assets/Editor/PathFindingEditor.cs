@@ -223,13 +223,13 @@ public class PathFindingEditor : EditorWindow
     }
     private void LayoutConexiones()
     {
-        if (_pendingStoreVariables)
+        if (_pendingStoreVariables && Event.current.type == EventType.Layout)
         {
             _wpContainer.displayConnectionLines = _setConnections;
             _wpContainer.radiusDistanceConnection = _radiusDistanceConnection;
             _pendingStoreVariables = false;
         }
-        if (_pendingConnections)
+        if (_pendingConnections && Event.current.type == EventType.Layout)
         {
             GenerateConnections(_nodes);
             //_wpContainer.displayConnectionLines = _setConnections;
@@ -327,37 +327,72 @@ public class PathFindingEditor : EditorWindow
     }
     private void GenerateConnections(List<Node> nodes)
     {
-        WaypointData wpData;
+        WaypointData currWpData;
         //var undoID = Undo.GetCurrentGroup();
 
-        //ELijo un nodo de la lista
+        //Recorro cada nodo
         for (int i = 0; i < nodes.Count; i++)
         {
-            wpData = _waypointData[i];
-            //Por cada nodo tengo...
-            //1. Obtener el ID propio y guardarlo en _wayPointData
-            wpData.id = nodes[i].Id;
+            currWpData = _waypointData[i];
 
-            //2. Generar las conexiones y obtener el ID de los mismos. Guardarlos en _wayPointData
-            nodes[i].RadiusDistance = _radiusDistanceConnection;
-            List<Node> connectedNodes;
-
-            connectedNodes = nodes[i].SetNewNeighbours();
-
-            PrefabUtility.RecordPrefabInstancePropertyModifications(nodes[i]);
-            wpData.connectedNodesID = new List<int>();
-
-            //Elijo una de las conexiones de la lista
-            for (int j = 0; j < connectedNodes.Count; j++)
+            //Creando conexiones nuevas
+            if (!_pendingConnections)
             {
-                wpData.connectedNodesID.Add(connectedNodes[j].Id);
-            }
+                //Por cada nodo tengo...
+                //1. Obtener el ID propio y guardarlo en _wayPointData
+                currWpData.id = nodes[i].Id;
 
-            _waypointData[i] = wpData;
+                //2. Generar las conexiones y obtener el ID de los mismos. Guardarlos en _wayPointData
+                List<Node> connectedNodes;
+                connectedNodes = nodes[i].SetNewNeighbours();
+
+                PrefabUtility.RecordPrefabInstancePropertyModifications(nodes[i]);
+                currWpData.connectedNodesID = new List<int>();
+
+                //Recorro cada
+                for (int j = 0; j < connectedNodes.Count; j++)
+                {
+                    currWpData.connectedNodesID.Add(connectedNodes[j].Id);
+                }
+
+                nodes[i].RadiusDistance = _radiusDistanceConnection;
+                _waypointData[i] = currWpData;
+            }
+            //Cargando conexiones guardadas
+            else
+            {
+                var connectedNodesIDs = currWpData.connectedNodesID;
+                nodes[i].Neighbours.Clear();
+                for (int j = 0; j < connectedNodesIDs.Count; j++)
+                {
+                    nodes[i].Neighbours.Add(GetNodeFromID(nodes, connectedNodesIDs[j]));
+                }
+                PrefabUtility.RecordPrefabInstancePropertyModifications(nodes[i]);
+            }
         }
 
         //EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
         //Undo.CollapseUndoOperations(undoID);
+    }
+
+    private Node GetNodeFromID(List<Node> nodes, int id)
+    {
+        Node node = null;
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i].Id == id)
+                node = nodes[i];
+        }
+        return node;
+    }
+    private WaypointData GetWPDataFromID(List<WaypointData> wpDataList, int id)
+    {
+        for (int i = 0; i < wpDataList.Count; i++)
+        {
+            if (wpDataList[i].id == id)
+                return (wpDataList[i]);
+        }
+        return default;
     }
     #endregion
 
@@ -506,7 +541,6 @@ public class PathFindingEditor : EditorWindow
 
             var cmraPoint = Camera.current.WorldToScreenPoint(_textAreaPosition);
             var cmraRectHeight = Camera.current.pixelHeight;
-            var cmraRectWidth = Camera.current.pixelWidth;
             var rect = new Rect(cmraPoint.x - 75, cmraRectHeight - cmraPoint.y, 200, 50);
             string text = "Pathfinding Area: " + string.Format("{0}x{1}\n", _pathfindingAreaLength, _pathfindingAreaWidth) +
                           "Total waypoints: " + _waypointRows * _waypointColumns;
@@ -531,7 +565,6 @@ public class PathFindingEditor : EditorWindow
                     else if (Event.current.type == EventType.ContextClick)
                     {
                         Handles.SphereHandleCap(id, _waypointData[i].position, Quaternion.identity, .5f, EventType.ContextClick);
-                        Debug.Log("Clicked");
                     }
 
                     var nodesIDs = _waypointData[i].connectedNodesID;
@@ -539,7 +572,9 @@ public class PathFindingEditor : EditorWindow
 
                     for (int j = 0; j < nodesIDs.Count; j++)
                     {
-                        Handles.DrawLine(_waypointData[i].position, _waypointData[nodesIDs[j]].position);
+                        //Debug.Log("nodesIDs.Count: " + nodesIDs.Count + " | " + "_waypointData.Count: " + _waypointData.Count + " : " + "i : " + i + "j: " + j);
+                        //Handles.DrawLine(_waypointData[i].position, _waypointData[nodesIDs[j]].position);
+                        Handles.DrawLine(_waypointData[i].position, GetWPDataFromID(_waypointData, nodesIDs[j]).position);
                     }
                 }
             }
