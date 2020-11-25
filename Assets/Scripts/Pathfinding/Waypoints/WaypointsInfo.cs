@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class WaypointsInfo : ScriptableObject
 {
+    public bool displayConnectionLines;
+    public float radiusDistanceConnection;
     public List<WaypointData> waypointsData;
 }
 

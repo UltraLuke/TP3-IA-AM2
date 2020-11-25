@@ -12,7 +12,7 @@ public class Node : MonoBehaviour
 
     public int Id { get => _id; set => _id = value; }
     public float RadiusDistance { set => radiusDistance = value; }
-    public List<Node> Neighbours { get => neighbours; }
+    public List<Node> Neighbours { get => neighbours; set => neighbours = value; }
 
     public List<Node> SetNewNeighbours()
     {
@@ -51,6 +51,7 @@ public class Node : MonoBehaviour
             Gizmos.color = Color.yellow;
             for (int i = 0; i < neighbours.Count; i++)
             {
+                if (neighbours[i] == null) continue;
                 Gizmos.DrawLine(transform.position, neighbours[i].transform.position);
             }
         }

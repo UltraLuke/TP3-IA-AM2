@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f372929670bba684fa04f7186804e3cb, type: 3}
-  m_Name: wpinfo
+  m_Name: wpinfo 1
   m_EditorClassIdentifier: 
   displayConnectionLines: 1
   radiusDistanceConnection: 0.8
   waypointsData:
   - id: 0
     position: {x: -9, y: 0.7, z: -9}
-    connectedNodesID: 0100000013000000
+    connectedNodesID: 010000001300000014000000
   - id: 1
     position: {x: -8, y: 0.7, z: -9}
     connectedNodesID: 000000001400000002000000
@@ -77,10 +77,10 @@ MonoBehaviour:
     connectedNodesID: 000000001400000026000000
   - id: 20
     position: {x: -8, y: 0.7, z: -8}
-    connectedNodesID: 01000000130000001500000027000000
+    connectedNodesID: 010000001300000027000000
   - id: 21
     position: {x: -7, y: 0.7, z: -8}
-    connectedNodesID: 14000000020000001600000028000000
+    connectedNodesID: 020000001600000028000000
   - id: 22
     position: {x: -6, y: 0.7, z: -8}
     connectedNodesID: 03000000150000002900000017000000

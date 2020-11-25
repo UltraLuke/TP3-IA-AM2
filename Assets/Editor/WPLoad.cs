@@ -8,10 +8,11 @@ public class WPLoad : EditorWindow
     public delegate void WayPointsLoader(string fileName);
     public WayPointsLoader wpLoader;
 
-    bool _loadBtnPressed = false;
     string _saveFolderPath;
     List<WaypointsInfo> _waypointsInfos;
     public string SaveFolderPath { set => _saveFolderPath = value; }
+
+    bool _folderExists;
 
     private void OnEnable()
     {
@@ -26,7 +27,7 @@ public class WPLoad : EditorWindow
 
             for (int i = 0; i < wpInfosGUID.Length; i++)
             {
-                var wpPath = AssetDatabase.GUIDToAssetPath(wpInfosGUID[0]);
+                var wpPath = AssetDatabase.GUIDToAssetPath(wpInfosGUID[i]);
                 var wp = AssetDatabase.LoadAssetAtPath<WaypointsInfo>(wpPath);
                 _waypointsInfos.Add(wp);
             }
@@ -40,7 +41,6 @@ public class WPLoad : EditorWindow
                 EditorGUILayout.ObjectField(_waypointsInfos[i], typeof(WaypointsInfo), false);
                 if (GUILayout.Button("Load"))
                 {
-                    _loadBtnPressed = true;
                     if (wpLoader != null)
                     {
                         wpLoader(_waypointsInfos[i].name + ".asset");
